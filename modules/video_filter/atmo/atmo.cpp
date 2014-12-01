@@ -138,7 +138,8 @@ static const int pi_device_type_values[] = {
      2, /* Quattro AtmoLight */
      3, /* DMX Device */
      4, /* MoMoLight device */
-     5  /* fnordlicht */
+     5, /* fnordlicht */
+     6  /* simple connection */
 };
 static const char *const ppsz_device_type_descriptions[] = {
 #if defined( _WIN32 )
@@ -148,7 +149,8 @@ static const char *const ppsz_device_type_descriptions[] = {
         N_("Quattro AtmoLight"),
         N_("DMX"),
         N_("MoMoLight"),
-        N_("fnordlicht")
+        N_("fnordlicht"),
+        N_("simple connection")
 };
 
 #define DMX_CHANNELS_TEXT      N_("Count of AtmoLight channels")
@@ -1713,6 +1715,10 @@ static void Atmo_SetupParameters(filter_t *p_filter)
 
             case 5:
                 p_sys->p_atmo_config->setConnectionType( actFnordlicht );
+                break;
+
+            case 6:
+                p_sys->p_atmo_config->setConnectionType( actSimpleAtmo );
                 break;
 
             default:

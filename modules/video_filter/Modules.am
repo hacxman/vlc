@@ -112,6 +112,7 @@ SOURCES_atmo = atmo/atmo.cpp \
 	atmo/AtmoMultiConnection.cpp atmo/AtmoMultiConnection.h \
 	atmo/MoMoConnection.cpp atmo/MoMoConnection.h \
 	atmo/FnordlichtConnection.cpp atmo/FnordlichtConnection.h \
+	atmo/SimpleConnection.cpp atmo/SimpleConnection.h \
 	atmo/AtmoPacketQueue.cpp atmo/AtmoPacketQueue.h
 SOURCES_gradfun = gradfun.c gradfun.h
 SOURCES_subsdelay = subsdelay.c

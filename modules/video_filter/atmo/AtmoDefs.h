@@ -115,7 +115,8 @@ enum AtmoConnectionType
       actMultiAtmo = 4,
       actMondolight = 5,
       actMoMoLight = 6,
-      actFnordlicht = 7
+      actFnordlicht = 7,
+      actSimpleAtmo = 8
 };
 static const char AtmoDeviceTypes[8][16] = {
       "Atmo-Classic",
