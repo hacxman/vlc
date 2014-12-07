@@ -24,6 +24,9 @@
 #if !defined(_WIN32)
 #include <termios.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 
 
@@ -39,10 +42,33 @@ ATMO_BOOL CSimpleConnection::OpenConnection() {
      char *serdevice = m_pAtmoConfig->getSerialDevice();
      if(!serdevice)
         return ATMO_FALSE;
-     m_hComport = open(serdevice, O_RDWR);
+     //m_hComport = open(serdevice, O_RDWR);
+     m_hComport = socket(AF_INET, SOCK_DGRAM, 0);
      if (m_hComport < 0) {
+       abort();
        return ATMO_FALSE;
      }
+     memset(&servaddr, 0, sizeof servaddr);
+     servaddr.sin_family = AF_INET;
+     int pos = strlen(serdevice);
+     char *addr, *port;
+     while (--pos) {
+       if (serdevice[pos] == ':') {
+         addr = (char *) calloc(pos+1, 1);
+         strncpy(addr, serdevice, pos);
+         port = (char *) calloc(strlen(serdevice) - pos + 1, 1);
+         strncpy(port, serdevice+pos+1, strlen(serdevice) - pos);
+
+         servaddr.sin_addr.s_addr = inet_addr(addr);
+         servaddr.sin_port = htons(atoi(port));
+
+         free(addr);
+         free(port);
+
+         break;
+       }
+     }
+
 /*
      int bconst = B38400;
      m_hComport = open(serdevice,O_RDWR |O_NOCTTY);
@@ -160,26 +186,27 @@ ATMO_BOOL CSimpleConnection::SendData(pColorPacket data) {
    if(m_hComport == INVALID_HANDLE_VALUE)
 	  return ATMO_FALSE;
 
-   unsigned char buffer[240*3];
+   unsigned char buffer[240*3+1];
    DWORD iBytesWritten;
 
 //   buffer[0] = 0xFF;  // Start Byte
 //   buffer[1] = 0x00;  // Start channel 0
 //   buffer[2] = 0x00;  // Start channel 0
 //   buffer[3] = 15; //
-   int iBuffer = 0;
+   memset(buffer, 0, sizeof buffer);
+   int iBuffer = 162*3;
    int idx;
 
    Lock();
 
-   for(int i=0; i < 5 ; i++) {
+   for(int i=0; i < getNumChannels() ; i++) {
        if(m_ChannelAssignment && (i < m_NumAssignedChannels))
           idx = m_ChannelAssignment[i];
        else
           idx = -1;
        if((idx>=0) && (idx<data->numColors)) {
-//         fprintf(stderr, "%i %i %i\n",i,idx,m_NumAssignedChannels);
-          for (int j=0; j<60; j++) { //4 is per channel for 12 zones per side
+//         fprintf(stderr, "%i %i %i\n",i,idx,getNumChannels()); //m_NumAssignedChannels);
+          for (int j=0; j<(72/getNumChannels()); j++) { //4 is per channel for 12 zones per side
             buffer[iBuffer++] = data->zone[idx].b;
             buffer[iBuffer++] = data->zone[idx].g;
             buffer[iBuffer++] = data->zone[idx].r;
@@ -194,8 +221,12 @@ ATMO_BOOL CSimpleConnection::SendData(pColorPacket data) {
 #if defined(_WIN32)
    WriteFile(m_hComport, buffer, sizeof buffer, &iBytesWritten, NULL); // send to COM-Port
 #else
-   iBytesWritten = write(m_hComport, buffer, sizeof buffer);
-   tcdrain(m_hComport);
+   //iBytesWritten = write(m_hComport, buffer, 1);
+   iBytesWritten = sendto(m_hComport, "a", 1, 0, (struct sockaddr *)&servaddr, sizeof servaddr);
+   //tcdrain(m_hComport);
+   //iBytesWritten += write(m_hComport, buffer+1, (sizeof buffer) - 1);
+   iBytesWritten += sendto(m_hComport, buffer, (sizeof buffer), 0, (struct sockaddr *)&servaddr, sizeof servaddr);
+   //tcdrain(m_hComport);
 #endif
 
    Unlock();
@@ -206,13 +237,20 @@ ATMO_BOOL CSimpleConnection::SendData(pColorPacket data) {
 
 ATMO_BOOL CSimpleConnection::CreateDefaultMapping(CAtmoChannelAssignment *ca)
 {
-   if(!ca) return ATMO_FALSE;
-   ca->setSize(5);
-   ca->setZoneIndex(0, 4); // Zone 5
-   ca->setZoneIndex(1, 3);
-   ca->setZoneIndex(2, 1);
-   ca->setZoneIndex(3, 0);
-   ca->setZoneIndex(4, 2);
+  if(!ca) return ATMO_FALSE;
+// ca->setSize(5);
+  int z = getNumChannels();
+  ca->setSize( z );
+  fprintf(stderr, "size set to: %i\n", z);
+
+  for(int i = 0; i < z ; i++ ) {
+      ca->setZoneIndex( i, i );
+  }
+//   ca->setZoneIndex(0, 4); // Zone 5
+//   ca->setZoneIndex(1, 3);
+//   ca->setZoneIndex(2, 1);
+//   ca->setZoneIndex(3, 0);
+//   ca->setZoneIndex(4, 2);
    return ATMO_TRUE;
 }
 

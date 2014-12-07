@@ -17,10 +17,13 @@
 #   include <windows.h>
 #endif
 
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 class CSimpleConnection : public CAtmoConnection {
     private:
         HANDLE m_hComport;
+        struct sockaddr_in servaddr;
 
 #if defined(_WIN32)
         DWORD  m_dwLastWin32Error;
@@ -50,7 +53,7 @@ class CSimpleConnection : public CAtmoConnection {
                                              int gamma_blue,
                                              ATMO_BOOL storeToEeprom);
 
-       virtual int getNumChannels() { return 5; }
+       virtual int getNumChannels() { return m_pAtmoConfig->getZoneCount(); }
 
 
        virtual const char *getDevicePath() { return "atmo simple"; }
