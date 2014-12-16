@@ -37,6 +37,17 @@ CSimpleConnection::CSimpleConnection(CAtmoConfig *cfg) : CAtmoConnection(cfg) {
 CSimpleConnection::~CSimpleConnection() {
 }
 
+void CSimpleConnection::fetchStripConfig() {
+    fprintf(stderr, "fetching config\n");
+    sendto(m_hComport, "x", 1, 0, (struct sockaddr *)&servaddr, sizeof servaddr);
+    tcdrain(m_hComport);
+
+    int32_t cfg;
+    recv(m_hComport, &cfg, sizeof cfg, 0);
+    fprintf(stderr, "cfg is: %i\n", cfg);
+    led_count = cfg;
+}
+
 ATMO_BOOL CSimpleConnection::OpenConnection() {
 #if defined(_ATMO_VLC_PLUGIN_)
      char *serdevice = m_pAtmoConfig->getSerialDevice();
@@ -68,6 +79,8 @@ ATMO_BOOL CSimpleConnection::OpenConnection() {
          break;
        }
      }
+
+     fetchStripConfig();
 
 /*
      int bconst = B38400;
@@ -186,15 +199,18 @@ ATMO_BOOL CSimpleConnection::SendData(pColorPacket data) {
    if(m_hComport == INVALID_HANDLE_VALUE)
 	  return ATMO_FALSE;
 
-   unsigned char buffer[240*3+1];
+//   unsigned char buffer[240*3+1];
+   unsigned char *buffer = new unsigned char[led_count * 3];
+
    DWORD iBytesWritten;
 
 //   buffer[0] = 0xFF;  // Start Byte
 //   buffer[1] = 0x00;  // Start channel 0
 //   buffer[2] = 0x00;  // Start channel 0
 //   buffer[3] = 15; //
-   memset(buffer, 0, sizeof buffer);
-   int iBuffer = 162*3;
+   memset(buffer, 0, led_count * 3);
+   int iBuffer = m_pAtmoConfig->getPitmo_Offset() * 3; //162*3;
+   const int amount = m_pAtmoConfig->getPitmo_Amount();
    int idx;
 
    Lock();
@@ -206,7 +222,7 @@ ATMO_BOOL CSimpleConnection::SendData(pColorPacket data) {
           idx = -1;
        if((idx>=0) && (idx<data->numColors)) {
 //         fprintf(stderr, "%i %i %i\n",i,idx,getNumChannels()); //m_NumAssignedChannels);
-          for (int j=0; j<(72/getNumChannels()); j++) { //4 is per channel for 12 zones per side
+          for (int j=0; j<(amount/getNumChannels()); j++) { //4 is per channel for 12 zones per side
             buffer[iBuffer++] = data->zone[idx].b;
             buffer[iBuffer++] = data->zone[idx].g;
             buffer[iBuffer++] = data->zone[idx].r;
@@ -219,19 +235,20 @@ ATMO_BOOL CSimpleConnection::SendData(pColorPacket data) {
    }
 
 #if defined(_WIN32)
-   WriteFile(m_hComport, buffer, sizeof buffer, &iBytesWritten, NULL); // send to COM-Port
+   WriteFile(m_hComport, buffer, led_count * 3, &iBytesWritten, NULL); // send to COM-Port
 #else
    //iBytesWritten = write(m_hComport, buffer, 1);
    iBytesWritten = sendto(m_hComport, "a", 1, 0, (struct sockaddr *)&servaddr, sizeof servaddr);
    //tcdrain(m_hComport);
    //iBytesWritten += write(m_hComport, buffer+1, (sizeof buffer) - 1);
-   iBytesWritten += sendto(m_hComport, buffer, (sizeof buffer), 0, (struct sockaddr *)&servaddr, sizeof servaddr);
+   iBytesWritten += sendto(m_hComport, buffer, led_count * 3, 0, (struct sockaddr *)&servaddr, sizeof servaddr);
    //tcdrain(m_hComport);
 #endif
 
    Unlock();
+   delete buffer;
 
-   return (iBytesWritten == (sizeof buffer)) ? ATMO_TRUE : ATMO_FALSE;
+   return (iBytesWritten == (led_count * 3)) ? ATMO_TRUE : ATMO_FALSE;
 }
 
 

@@ -164,6 +164,10 @@ class CAtmoConfig {
          int m_Fnordlicht_Amount;
 
     protected:
+         int m_Pitmo_Amount;
+         int m_Pitmo_Offset;
+
+    protected:
          AtmoGammaCorrect m_Software_gamma_mode;
 
          int m_Software_gamma_red;
@@ -377,6 +381,11 @@ class CAtmoConfig {
 
         int getFnordlicht_Amount() { return m_Fnordlicht_Amount; }
         void setFnordlicht_Amount(int fnordlichtAmount) { m_Fnordlicht_Amount = fnordlichtAmount; }
+
+        int getPitmo_Amount() { return m_Pitmo_Amount; }
+        void setPitmo_Amount(int amount) { m_Pitmo_Amount = amount; }
+        int getPitmo_Offset() { return m_Pitmo_Offset; }
+        void setPitmo_Offset(int offset) { m_Pitmo_Offset = offset; }
 
 };
 

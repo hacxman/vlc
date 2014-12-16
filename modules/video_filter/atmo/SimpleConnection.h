@@ -23,6 +23,7 @@
 class CSimpleConnection : public CAtmoConnection {
     private:
         HANDLE m_hComport;
+        int led_count;
         struct sockaddr_in servaddr;
 
 #if defined(_WIN32)
@@ -30,6 +31,9 @@ class CSimpleConnection : public CAtmoConnection {
     public:
         DWORD getLastError() { return m_dwLastWin32Error; }
 #endif
+
+    private:
+        void fetchStripConfig(void);
 
     public:
        CSimpleConnection(CAtmoConfig *cfg);

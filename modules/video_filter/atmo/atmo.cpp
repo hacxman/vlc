@@ -139,7 +139,7 @@ static const int pi_device_type_values[] = {
      3, /* DMX Device */
      4, /* MoMoLight device */
      5, /* fnordlicht */
-     6  /* simple connection */
+     6  /* Pitmo */
 };
 static const char *const ppsz_device_type_descriptions[] = {
 #if defined( _WIN32 )
@@ -150,7 +150,7 @@ static const char *const ppsz_device_type_descriptions[] = {
         N_("DMX"),
         N_("MoMoLight"),
         N_("fnordlicht"),
-        N_("simple connection")
+        N_("Pitmo")
 };
 
 #define DMX_CHANNELS_TEXT      N_("Count of AtmoLight channels")
@@ -168,6 +168,11 @@ static const char *const ppsz_device_type_descriptions[] = {
 #define FNORDLICHT_AMOUNT_LONGTEXT  N_("Depending on the amount your " \
                                    "fnordlicht hardware " \
                                    "choose 1 to 254 channels")
+
+#define PITMO_AMOUNT_TEXT      N_("Count of LEDs")
+#define PITMO_AMOUNT_LONGTEXT  N_("How many LEDs on strip should be used")
+#define PITMO_OFFSET_TEXT      N_("Offset")
+#define PITMO_OFFSET_LONGTEXT  N_("skip this many LEDs on strip")
 
 #if defined( _WIN32 )
 #  define DEFAULT_DEVICE   0
@@ -436,6 +441,13 @@ add_integer_with_range(CFG_PREFIX "fnordlicht-amount",   2, 1, 254,
                        FNORDLICHT_AMOUNT_TEXT,
                        FNORDLICHT_AMOUNT_LONGTEXT, false)
 
+set_section( N_("Pitmo options" ), 0 )
+add_integer_with_range(CFG_PREFIX "pitmo-amount", 0, 72, 1024,
+                       PITMO_AMOUNT_TEXT,
+                       PITMO_AMOUNT_LONGTEXT, false)
+add_integer_with_range(CFG_PREFIX "pitmo-offset", 0, 0, 1024,
+                       PITMO_OFFSET_TEXT,
+                       PITMO_OFFSET_LONGTEXT, false)
 
 /*
   instead of redefining the original AtmoLight zones with gradient
@@ -667,6 +679,8 @@ static const char *const ppsz_filter_options[] = {
         "dmx-chbase",
         "momo-channels",
         "fnordlicht-amount",
+        "pitmo-amount",
+        "pitmo-offset",
 
 #if defined(_WIN32 )
         "atmowinexe",
@@ -1540,6 +1554,16 @@ static void Atmo_SetupConfig(filter_t *p_filter, CAtmoConfig *p_atmo_config)
     */
     p_atmo_config->setFnordlicht_Amount(
         var_CreateGetIntegerCommand( p_filter, CFG_PREFIX "fnordlicht-amount")
+       );
+
+    /*
+      Pitmo options
+    */
+    p_atmo_config->setPitmo_Amount(
+        var_CreateGetIntegerCommand( p_filter, CFG_PREFIX "pitmo-amount")
+       );
+    p_atmo_config->setPitmo_Offset(
+        var_CreateGetIntegerCommand( p_filter, CFG_PREFIX "pitmo-offset")
        );
 
 }
