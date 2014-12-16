@@ -1,6 +1,6 @@
 /*
- * SimpleConnection.cpp: Class for communication with the serial hardware of
- * Atmo Light, opens and configures the serial port
+ * PitmoConnection.cpp: Class for communication with the Pitmo over UDP.
+ * Opens a socket, fetches config and contructs packets
  *
  * See the README.txt file for copyright information and how to reach the author(s).
  *
@@ -12,7 +12,7 @@
 #endif
 
 #include "AtmoDefs.h"
-#include "SimpleConnection.h"
+#include "PitmoConnection.h"
 
 #if !defined(_ATMO_VLC_PLUGIN_)
 # include "SimpleConfigDialog.h"
@@ -30,14 +30,14 @@
 #endif
 
 
-CSimpleConnection::CSimpleConnection(CAtmoConfig *cfg) : CAtmoConnection(cfg) {
+CPitmoConnection::CPitmoConnection(CAtmoConfig *cfg) : CAtmoConnection(cfg) {
     m_hComport = INVALID_HANDLE_VALUE;
 }
 
-CSimpleConnection::~CSimpleConnection() {
+CPitmoConnection::~CPitmoConnection() {
 }
 
-void CSimpleConnection::fetchStripConfig() {
+void CPitmoConnection::fetchStripConfig() {
     fprintf(stderr, "fetching config\n");
     sendto(m_hComport, "x", 1, 0, (struct sockaddr *)&servaddr, sizeof servaddr);
     tcdrain(m_hComport);
@@ -48,7 +48,7 @@ void CSimpleConnection::fetchStripConfig() {
     led_count = cfg;
 }
 
-ATMO_BOOL CSimpleConnection::OpenConnection() {
+ATMO_BOOL CPitmoConnection::OpenConnection() {
 #if defined(_ATMO_VLC_PLUGIN_)
      char *serdevice = m_pAtmoConfig->getSerialDevice();
      if(!serdevice)
@@ -109,7 +109,7 @@ ATMO_BOOL CSimpleConnection::OpenConnection() {
      return true;
 }
 
-void CSimpleConnection::CloseConnection() {
+void CPitmoConnection::CloseConnection() {
   if(m_hComport!=INVALID_HANDLE_VALUE) {
 #if defined(_WIN32)
      CloseHandle(m_hComport);
@@ -120,11 +120,11 @@ void CSimpleConnection::CloseConnection() {
   }
 }
 
-ATMO_BOOL CSimpleConnection::isOpen(void) {
+ATMO_BOOL CPitmoConnection::isOpen(void) {
 	 return (m_hComport != INVALID_HANDLE_VALUE);
 }
 
-ATMO_BOOL CSimpleConnection::HardwareWhiteAdjust(int global_gamma,
+ATMO_BOOL CPitmoConnection::HardwareWhiteAdjust(int global_gamma,
                                                      int global_contrast,
                                                      int contrast_red,
                                                      int contrast_green,
@@ -195,7 +195,7 @@ ATMO_BOOL CSimpleConnection::HardwareWhiteAdjust(int global_gamma,
 }
 
 
-ATMO_BOOL CSimpleConnection::SendData(pColorPacket data) {
+ATMO_BOOL CPitmoConnection::SendData(pColorPacket data) {
    if(m_hComport == INVALID_HANDLE_VALUE)
 	  return ATMO_FALSE;
 
@@ -252,7 +252,7 @@ ATMO_BOOL CSimpleConnection::SendData(pColorPacket data) {
 }
 
 
-ATMO_BOOL CSimpleConnection::CreateDefaultMapping(CAtmoChannelAssignment *ca)
+ATMO_BOOL CPitmoConnection::CreateDefaultMapping(CAtmoChannelAssignment *ca)
 {
   if(!ca) return ATMO_FALSE;
 // ca->setSize(5);
@@ -273,7 +273,7 @@ ATMO_BOOL CSimpleConnection::CreateDefaultMapping(CAtmoChannelAssignment *ca)
 
 #if !defined(_ATMO_VLC_PLUGIN_)
 
-char *CSimpleConnection::getChannelName(int ch)
+char *CPitmoConnection::getChannelName(int ch)
 {
   if(ch < 0) return NULL;
   char buf[30];
@@ -302,7 +302,7 @@ char *CSimpleConnection::getChannelName(int ch)
   return strdup(buf);
 }
 
-ATMO_BOOL CSimpleConnection::ShowConfigDialog(HINSTANCE hInst, HWND parent, CAtmoConfig *cfg)
+ATMO_BOOL CPitmoConnection::ShowConfigDialog(HINSTANCE hInst, HWND parent, CAtmoConfig *cfg)
 {
     CSimpleConfigDialog *dlg = new CSimpleConfigDialog(hInst, parent, cfg);
 

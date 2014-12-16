@@ -1742,7 +1742,7 @@ static void Atmo_SetupParameters(filter_t *p_filter)
                 break;
 
             case 6:
-                p_sys->p_atmo_config->setConnectionType( actSimpleAtmo );
+                p_sys->p_atmo_config->setConnectionType( actPitmo );
                 break;
 
             default:

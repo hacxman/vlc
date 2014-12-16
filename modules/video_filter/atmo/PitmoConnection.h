@@ -1,13 +1,13 @@
 /*
- * SimpleConnection.h: Class for communication with the serial hardware of Atmo Light,
+ * PitmoConnection.h: Class for communication with the serial hardware of Atmo Light,
  * opens and configures the serial port
  *
  * See the README.txt file for copyright information and how to reach the author(s).
  *
  * $Id$
  */
-#ifndef _SimpleConnection_h_
-#define _SimpleConnection_h_
+#ifndef _PitmoConnection_h_
+#define _PitmoConnection_h_
 
 #include "AtmoDefs.h"
 #include "AtmoConnection.h"
@@ -20,7 +20,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-class CSimpleConnection : public CAtmoConnection {
+class CPitmoConnection : public CAtmoConnection {
     private:
         HANDLE m_hComport;
         int led_count;
@@ -36,8 +36,8 @@ class CSimpleConnection : public CAtmoConnection {
         void fetchStripConfig(void);
 
     public:
-       CSimpleConnection(CAtmoConfig *cfg);
-       virtual ~CSimpleConnection(void);
+       CPitmoConnection(CAtmoConfig *cfg);
+       virtual ~CPitmoConnection(void);
 
   	   virtual ATMO_BOOL OpenConnection();
 

@@ -18,7 +18,7 @@
 #include "AtmoMultiConnection.h"
 #include "MoMoConnection.h"
 #include "FnordlichtConnection.h"
-#include "SimpleConnection.h"
+#include "PitmoConnection.h"
 #include "AtmoExternalCaptureInput.h"
 #include <math.h>
 
@@ -428,8 +428,8 @@ ATMO_BOOL CAtmoTools::RecreateConnection(CAtmoDynData *pDynData)
                pDynData->UnLockCriticalSection();
                return ATMO_TRUE;
            }
-           case actSimpleAtmo: {
-               CSimpleConnection *tempConnection = new CSimpleConnection( atmoConfig );
+           case actPitmo: {
+               CPitmoConnection *tempConnection = new CPitmoConnection( atmoConfig );
                if(tempConnection->OpenConnection() == ATMO_FALSE) {
                   pDynData->setAtmoConnection(tempConnection);
 
