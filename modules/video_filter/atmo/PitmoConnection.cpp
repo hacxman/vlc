@@ -27,11 +27,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#else
+#include <winsock2.h>
 #endif
 
 
 CPitmoConnection::CPitmoConnection(CAtmoConfig *cfg) : CAtmoConnection(cfg) {
-    m_hComport = INVALID_HANDLE_VALUE;
+    m_hComport = -1;
 }
 
 CPitmoConnection::~CPitmoConnection() {
@@ -41,7 +43,7 @@ void CPitmoConnection::fetchStripConfig() {
     sendto(m_hComport, "x", 1, 0, (struct sockaddr *)&m_servaddr, sizeof m_servaddr);
 
     int32_t cfg;
-    recv(m_hComport, &cfg, sizeof cfg, 0);
+    recv(m_hComport, (char*)&cfg, sizeof cfg, 0);
     m_ledcount = cfg;
 }
 
@@ -83,14 +85,14 @@ ATMO_BOOL CPitmoConnection::OpenConnection() {
 }
 
 void CPitmoConnection::CloseConnection() {
-  if(m_hComport!=INVALID_HANDLE_VALUE) {
+  if(m_hComport!=-1) {
      close(m_hComport);
-     m_hComport = INVALID_HANDLE_VALUE;
+     m_hComport = -1;
   }
 }
 
 ATMO_BOOL CPitmoConnection::isOpen(void) {
-	 return (m_hComport != INVALID_HANDLE_VALUE);
+	 return (m_hComport != -1);
 }
 
 ATMO_BOOL CPitmoConnection::HardwareWhiteAdjust(int global_gamma,
@@ -107,7 +109,7 @@ ATMO_BOOL CPitmoConnection::HardwareWhiteAdjust(int global_gamma,
 
 
 ATMO_BOOL CPitmoConnection::SendData(pColorPacket data) {
-    if(m_hComport == INVALID_HANDLE_VALUE)
+    if(m_hComport == -1)
         return ATMO_FALSE;
 
     unsigned char *buffer = new unsigned char[m_ledcount * 3];
@@ -141,7 +143,7 @@ ATMO_BOOL CPitmoConnection::SendData(pColorPacket data) {
 
     iBytesWritten = sendto(m_hComport, "a", 1, 0,
         (struct sockaddr *)&m_servaddr, sizeof m_servaddr);
-    iBytesWritten += sendto(m_hComport, buffer, m_ledcount * 3, 0,
+    iBytesWritten += sendto(m_hComport, (const char *)buffer, m_ledcount * 3, 0,
         (struct sockaddr *)&m_servaddr, sizeof m_servaddr);
 
     Unlock();

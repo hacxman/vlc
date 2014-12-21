@@ -15,14 +15,15 @@
 
 #if defined(_WIN32)
 #   include <windows.h>
-#endif
-
+#include <winsock2.h>
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
+#endif
 
 class CPitmoConnection : public CAtmoConnection {
     private:
-        HANDLE m_hComport;
+        int m_hComport;
         int m_ledcount;
         struct sockaddr_in m_servaddr;
 
