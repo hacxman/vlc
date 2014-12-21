@@ -23,8 +23,8 @@
 class CPitmoConnection : public CAtmoConnection {
     private:
         HANDLE m_hComport;
-        int led_count;
-        struct sockaddr_in servaddr;
+        int m_ledcount;
+        struct sockaddr_in m_servaddr;
 
 #if defined(_WIN32)
         DWORD  m_dwLastWin32Error;
@@ -39,7 +39,7 @@ class CPitmoConnection : public CAtmoConnection {
        CPitmoConnection(CAtmoConfig *cfg);
        virtual ~CPitmoConnection(void);
 
-  	   virtual ATMO_BOOL OpenConnection();
+       virtual ATMO_BOOL OpenConnection();
 
        virtual void CloseConnection();
 
